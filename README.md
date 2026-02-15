@@ -132,7 +132,7 @@ Edite o `.env` com suas credenciais:
 
 ```env
 DATABASE_URL="postgresql://user:password@localhost:5432/barber_api?schema=public"
-BETTER_AUTH_SECRET="seu-secret-aleatorio"
+BETTER_AUTH_SECRET="better-auth-secret"
 BETTER_AUTH_URL="http://localhost:3000"
 PORT=3000
 NODE_ENV="development"

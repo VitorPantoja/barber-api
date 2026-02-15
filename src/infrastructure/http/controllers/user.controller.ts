@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Query, Res, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 import { IUserService } from 'src/core/application/ports';
 
@@ -14,6 +15,7 @@ import { mapResultToHttp } from '../map-result-to-http';
 import { UserPresenter } from '../presenters/user.presenter';
 
 @Controller('users')
+@ApiBearerAuth()
 export class UserController {
   constructor(private readonly userService: IUserService) {}
 
