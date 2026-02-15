@@ -25,6 +25,7 @@
     "prisma.config.ts",
     "generated",
     "node_modules",
+    "prisma",
     "dist"
   ]
 }

@@ -3,8 +3,7 @@ import { Pool } from 'pg';
 import { Global, Module, OnModuleDestroy } from '@nestjs/common';
 import { PrismaPg } from '@prisma/adapter-pg';
 
-import { PrismaClient } from '../../../../generated/prisma/client';
-
+import { PrismaClient } from 'src/generated/prisma/client';
 export const PRISMA_TOKEN = 'PrismaClient';
 
 @Global()
