@@ -1,10 +1,12 @@
+import { v4 as uuid } from 'uuid';
+
 import { Inject, Injectable } from '@nestjs/common';
 
 import { type PaginatedResult, type PaginationQuery } from '../../../core/application/dtos/pagination.dto';
 import { type User } from '../../../core/domain/entities';
 import { IUserRepository } from '../../../core/domain/repositories';
-import { type PrismaClient } from '../../../generated/prisma/client';
-import { PRISMA_TOKEN } from '../../modules/database/database.module';
+import { PrismaClient } from '../../../generated/prisma/client';
+import { PRISMA_TOKEN } from '../../modules/database/database.constants';
 import { UserMapper } from '../mappers/user.mapper';
 
 @Injectable()
@@ -93,5 +95,61 @@ export class UserRepository extends IUserRepository {
 
   async delete(id: string): Promise<void> {
     await this.prisma.user.delete({ where: { id } });
+  }
+
+  async createWithPassword(user: User, passwordHash: string): Promise<User> {
+    const createdUser = await this.prisma.$transaction(async function (tx) {
+      const newUser = await tx.user.create({
+        data: {
+          barbershopId: user.barbershopId,
+          email: user.email,
+          emailVerified: user.emailVerified,
+          id: user.id,
+          image: user.image,
+          name: user.name,
+          role: user.role
+        }
+      });
+
+      await tx.account.create({
+        data: {
+          accountId: newUser.id,
+          createdAt: new Date(),
+          id: uuid(),
+          password: passwordHash,
+          providerId: 'credential',
+          updatedAt: new Date(),
+          userId: newUser.id
+        }
+      });
+
+      return newUser;
+    });
+
+    return UserMapper.toDomain(createdUser);
+  }
+
+  async getPasswordHash(userId: string): Promise<string | null> {
+    const account = await this.prisma.account.findFirst({
+      where: {
+        providerId: 'credential',
+        userId
+      }
+    });
+
+    return account?.password || null;
+  }
+
+  async findBySessionToken(token: string): Promise<User | null> {
+    const session = await this.prisma.session.findUnique({
+      include: { user: true },
+      where: { token }
+    });
+
+    if (!session || new Date() > session.expiresAt) {
+      return null;
+    }
+
+    return UserMapper.toDomain(session.user);
   }
 }

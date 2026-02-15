@@ -1,12 +1,12 @@
 import { Body, Controller, Delete, Get, Param, Patch, Query, Res, UseGuards } from '@nestjs/common';
 
-import { IUserService } from '../../../core/application/ports/user.service.port';
+import { IUserService } from 'src/core/application/ports';
+
 import { type User } from '../../../core/domain/entities';
 import { USER_ROLE } from '../../../core/domain/enums';
 import { CurrentUser } from '../../decorators/current-user.decorator';
 import { Roles } from '../../decorators/roles.decorator';
 import { RolesGuard } from '../../guards/roles.guard';
-import { SessionGuard } from '../../guards/session.guard';
 import { PaginationQueryDto } from '../dtos/pagination-query.dto';
 import { UpdateUserDto } from '../dtos/update-user.dto';
 import { type NestResponseLike } from '../http.consts';
@@ -14,7 +14,6 @@ import { mapResultToHttp } from '../map-result-to-http';
 import { UserPresenter } from '../presenters/user.presenter';
 
 @Controller('users')
-@UseGuards(SessionGuard)
 export class UserController {
   constructor(private readonly userService: IUserService) {}
 

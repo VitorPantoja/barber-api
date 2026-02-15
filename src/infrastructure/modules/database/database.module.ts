@@ -3,12 +3,15 @@ import { Pool } from 'pg';
 import { Global, Module, OnModuleDestroy } from '@nestjs/common';
 import { PrismaPg } from '@prisma/adapter-pg';
 
-import { PrismaClient } from 'src/generated/prisma/client';
-export const PRISMA_TOKEN = 'PrismaClient';
+import { IUserRepository } from '../../../core/domain/repositories';
+import { PrismaClient } from '../../../generated/prisma/client';
+import { UserRepository } from '../../database/repositories/user.repository';
+import { PRISMA_TOKEN } from './database.constants';
 
+export { PRISMA_TOKEN };
 @Global()
 @Module({
-  exports: [PRISMA_TOKEN],
+  exports: [PRISMA_TOKEN, IUserRepository],
   providers: [
     {
       provide: PRISMA_TOKEN,
@@ -20,6 +23,10 @@ export const PRISMA_TOKEN = 'PrismaClient';
 
         return prisma;
       }
+    },
+    {
+      provide: IUserRepository,
+      useClass: UserRepository
     }
   ]
 })
