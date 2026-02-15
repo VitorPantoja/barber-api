@@ -1,7 +1,7 @@
 import { v4 as uuid } from 'uuid';
 
 import { Barbershop } from '../../domain/entities';
-import { SubscriptionStatus } from '../../domain/enums';
+import { SUBSCRIPTION_STATUS } from '../../domain/enums';
 import { type IBarbershopRepository } from '../../domain/repositories';
 import { alreadyExists, created, notFound, type Result, success } from '../../domain/result';
 import { type CreateBarbershopCommand } from '../commands';
@@ -29,7 +29,7 @@ export class BarbershopService extends IBarbershopService {
       phones: command.phones,
       slug: command.slug,
       stripeCustomerId: null,
-      subscriptionStatus: SubscriptionStatus.TRIALING,
+      subscriptionStatus: SUBSCRIPTION_STATUS.TRIALING,
       themeColor: command.themeColor ?? '#000000',
       updatedAt: new Date()
     });

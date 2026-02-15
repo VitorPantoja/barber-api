@@ -1,4 +1,4 @@
-import { UserRole } from '../enums';
+import { USER_ROLE, type UserRole } from '../enums';
 
 interface UserProps {
   id: string;
@@ -36,23 +36,23 @@ export class User {
   }
 
   isCustomer(): boolean {
-    return this.role === UserRole.CUSTOMER;
+    return this.role === USER_ROLE.CUSTOMER;
   }
 
   isAdmin(): boolean {
-    return this.role === UserRole.ADMIN;
+    return this.role === USER_ROLE.ADMIN;
   }
 
   isCompanyAdmin(): boolean {
-    return this.role === UserRole.COMPANY_ADMIN;
+    return this.role === USER_ROLE.COMPANY_ADMIN;
   }
 
   isBarber(): boolean {
-    return this.role === UserRole.BARBER;
+    return this.role === USER_ROLE.BARBER;
   }
 
   isTenantMember(): boolean {
-    return this.role === UserRole.COMPANY_ADMIN || this.role === UserRole.BARBER;
+    return this.role === USER_ROLE.COMPANY_ADMIN || this.role === USER_ROLE.BARBER;
   }
 
   belongsTo(barbershopId: string): boolean {

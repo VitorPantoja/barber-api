@@ -1,4 +1,4 @@
-import { SubscriptionStatus } from '../enums';
+import { SUBSCRIPTION_STATUS, type SubscriptionStatus } from '../enums';
 
 interface BarbershopProps {
   id: string;
@@ -49,7 +49,7 @@ export class Barbershop {
 
   isActive(): boolean {
     return (
-      this.subscriptionStatus === SubscriptionStatus.ACTIVE || this.subscriptionStatus === SubscriptionStatus.TRIALING
+      this.subscriptionStatus === SUBSCRIPTION_STATUS.ACTIVE || this.subscriptionStatus === SUBSCRIPTION_STATUS.TRIALING
     );
   }
 
@@ -58,6 +58,6 @@ export class Barbershop {
   }
 
   isPastDue(): boolean {
-    return this.subscriptionStatus === SubscriptionStatus.PAST_DUE;
+    return this.subscriptionStatus === SUBSCRIPTION_STATUS.PAST_DUE;
   }
 }

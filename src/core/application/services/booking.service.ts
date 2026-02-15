@@ -1,7 +1,7 @@
 import { v4 as uuid } from 'uuid';
 
 import { Booking } from '../../domain/entities';
-import { BookingStatus, DayOfWeek } from '../../domain/enums';
+import { BOOKING_STATUS, DAY_OF_WEEK, type DayOfWeek } from '../../domain/enums';
 import {
   type IBarbershopServiceRepository,
   type IBookingRepository,
@@ -13,13 +13,13 @@ import { type CreateBookingCommand } from '../commands';
 import { IBookingService } from '../ports/booking.service.port';
 
 const DAY_MAP: Record<number, DayOfWeek> = {
-  0: DayOfWeek.SUNDAY,
-  1: DayOfWeek.MONDAY,
-  2: DayOfWeek.TUESDAY,
-  3: DayOfWeek.WEDNESDAY,
-  4: DayOfWeek.THURSDAY,
-  5: DayOfWeek.FRIDAY,
-  6: DayOfWeek.SATURDAY
+  0: DAY_OF_WEEK.SUNDAY,
+  1: DAY_OF_WEEK.MONDAY,
+  2: DAY_OF_WEEK.TUESDAY,
+  3: DAY_OF_WEEK.WEDNESDAY,
+  4: DAY_OF_WEEK.THURSDAY,
+  5: DAY_OF_WEEK.FRIDAY,
+  6: DAY_OF_WEEK.SATURDAY
 };
 
 interface TimeSlot {
@@ -87,7 +87,7 @@ export class BookingService extends IBookingService {
       id: uuid(),
       serviceId: command.serviceId,
       startTime: command.startTime,
-      status: BookingStatus.CONFIRMED,
+      status: BOOKING_STATUS.CONFIRMED,
       stripeChargeId: null,
       updatedAt: new Date(),
       userId: command.userId
@@ -114,7 +114,7 @@ export class BookingService extends IBookingService {
     const updated = await this.bookingRepo.updateStatus({
       cancelledAt: new Date(),
       id: bookingId,
-      status: BookingStatus.CANCELLED
+      status: BOOKING_STATUS.CANCELLED
     });
 
     return success(updated);

@@ -1,4 +1,4 @@
-import { BookingStatus } from '../enums';
+import { BOOKING_STATUS, type BookingStatus } from '../enums';
 
 const CANCELLATION_WINDOW_HOURS = 2;
 
@@ -50,7 +50,7 @@ export class Booking {
   }
 
   canCancel(now: Date): boolean {
-    if (this.status !== BookingStatus.CONFIRMED) {
+    if (this.status !== BOOKING_STATUS.CONFIRMED) {
       return false;
     }
 
@@ -66,11 +66,11 @@ export class Booking {
   }
 
   isConfirmed(): boolean {
-    return this.status === BookingStatus.CONFIRMED;
+    return this.status === BOOKING_STATUS.CONFIRMED;
   }
 
   isCancelled(): boolean {
-    return this.status === BookingStatus.CANCELLED;
+    return this.status === BOOKING_STATUS.CANCELLED;
   }
 
   static computeEndTime({ durationMinutes, startTime }: { startTime: string; durationMinutes: number }): string {
