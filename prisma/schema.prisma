@@ -1,0 +1,206 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── ENUMS ───────────────────────────────────────────────
+
+enum UserRole {
+  ADMIN
+  COMPANY_ADMIN
+  BARBER
+  CUSTOMER
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+  TRIALING
+}
+
+enum BookingStatus {
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  NO_SHOW
+}
+
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+// ─── USER (Global — better-auth managed) ─────────────────
+
+model User {
+  id            String   @id
+  name          String
+  email         String   @unique
+  emailVerified Boolean  @default(false)
+  image         String?
+  role          UserRole @default(CUSTOMER)
+
+  barbershopId String?
+  barbershop   Barbershop? @relation(fields: [barbershopId], references: [id])
+
+  sessions Session[]
+  accounts Account[]
+  bookings Booking[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([barbershopId])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+// ─── TENANT (Barbershop) ─────────────────────────────────
+
+model Barbershop {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String   @unique
+  description String
+  address     String
+  imageUrl    String
+  phones      String[]
+
+  subscriptionStatus SubscriptionStatus @default(TRIALING)
+  stripeCustomerId   String?            @unique
+
+  logoUrl    String?
+  themeColor String? @default("#000000")
+
+  members        User[]
+  services       BarbershopService[]
+  operatingHours OperatingHours[]
+  bookings       Booking[]
+
+  createdAt DateTime @default(now()) @db.Timestamptz()
+  updatedAt DateTime @updatedAt @db.Timestamptz()
+
+  @@index([subscriptionStatus])
+  @@map("barbershops")
+}
+
+// ─── OPERATING HOURS ─────────────────────────────────────
+
+model OperatingHours {
+  id           String     @id @default(uuid())
+  barbershopId String
+  barbershop   Barbershop @relation(fields: [barbershopId], references: [id], onDelete: Cascade)
+  dayOfWeek    DayOfWeek
+  openTime     String
+  closeTime    String
+  isClosed     Boolean    @default(false)
+
+  @@unique([barbershopId, dayOfWeek])
+  @@map("operating_hours")
+}
+
+// ─── CATALOG (Services) ──────────────────────────────────
+
+model BarbershopService {
+  id              String     @id @default(uuid())
+  name            String
+  description     String
+  imageUrl        String?
+  priceInCents    Int
+  durationMinutes Int
+  barbershopId    String
+  barbershop      Barbershop @relation(fields: [barbershopId], references: [id], onDelete: Cascade)
+  bookings        Booking[]
+  deletedAt       DateTime?  @db.Timestamptz()
+
+  createdAt DateTime @default(now()) @db.Timestamptz()
+  updatedAt DateTime @updatedAt @db.Timestamptz()
+
+  @@index([barbershopId])
+  @@map("barbershop_services")
+}
+
+// ─── SCHEDULING ──────────────────────────────────────────
+
+model Booking {
+  id           String            @id @default(uuid())
+  status       BookingStatus     @default(CONFIRMED)
+  barbershopId String
+  barbershop   Barbershop        @relation(fields: [barbershopId], references: [id])
+  serviceId    String
+  service      BarbershopService @relation(fields: [serviceId], references: [id])
+  barberId     String
+  userId       String
+  user         User              @relation(fields: [userId], references: [id])
+  date         DateTime          @db.Date
+  startTime    String
+  endTime      String
+
+  stripeChargeId String?
+  cancelledAt    DateTime? @db.Timestamptz()
+  createdAt      DateTime  @default(now()) @db.Timestamptz()
+  updatedAt      DateTime  @updatedAt @db.Timestamptz()
+
+  @@index([barbershopId, date])
+  @@index([barberId, date])
+  @@index([userId])
+  @@map("bookings")
+}

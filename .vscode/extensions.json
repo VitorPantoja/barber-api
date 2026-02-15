@@ -1,0 +1,21 @@
+{
+  "recommendations": [
+    "esbenp.prettier-vscode",
+    "johnpapa.vscode-peacock",
+    "dbaeumer.vscode-eslint",
+    "mhutchie.git-graph",
+    "thang-nm.catppuccin-perfect-icons",
+    "dzhavat.bracket-pair-toggler",
+    "dbaeumer.vscode-eslint",
+    "oderwat.indent-rainbow",
+    "formulahendry.auto-rename-tag",
+    "aaron-bond.better-comments",
+    "CoenraadS.bracket-pair-colorizer-2",
+    "Catppuccin.catppuccin-vsc",
+    "Catppuccin.catppuccin-vsc-icons",
+    "mikestead.dotenv",
+    "ms-azuretools.vscode-docker",
+    "eamodio.gitlens",
+    "christian-kohler.path-intellisense"
+  ]
+}
