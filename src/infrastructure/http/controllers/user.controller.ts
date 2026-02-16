@@ -1,8 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Patch, Query, Res, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth } from '@nestjs/swagger';
 
-import { IUserService } from 'src/core/application/ports';
-
+import { IUserService } from '../../../core/application/ports';
 import { type User } from '../../../core/domain/entities';
 import { USER_ROLE } from '../../../core/domain/enums';
 import { CurrentUser } from '../../decorators/current-user.decorator';

@@ -1,42 +1,53 @@
-import { v4 as uuid } from 'uuid';
+import { Injectable } from '@nestjs/common';
 
+import { DAY_MAP } from '../../domain/consts';
 import { Booking } from '../../domain/entities';
-import { BOOKING_STATUS, DAY_OF_WEEK, type DayOfWeek } from '../../domain/enums';
+import { BOOKING_STATUS } from '../../domain/enums';
 import {
-  type IBarbershopServiceRepository,
-  type IBookingRepository,
-  type IOperatingHoursRepository
+  IBarbershopRepository,
+  IBarbershopServiceRepository,
+  IBookingRepository,
+  IOperatingHoursRepository,
+  IUserRepository
 } from '../../domain/repositories';
-import { created, error, notFound, type Result, success } from '../../domain/result';
+import { created, error, notFound, success, type Result } from '../../domain/result';
 import { AvailabilityDomainService } from '../../domain/services/availability.domain-service';
 import { type CreateBookingCommand } from '../commands';
 import { IBookingService } from '../ports/booking.service.port';
-
-const DAY_MAP: Record<number, DayOfWeek> = {
-  0: DAY_OF_WEEK.SUNDAY,
-  1: DAY_OF_WEEK.MONDAY,
-  2: DAY_OF_WEEK.TUESDAY,
-  3: DAY_OF_WEEK.WEDNESDAY,
-  4: DAY_OF_WEEK.THURSDAY,
-  5: DAY_OF_WEEK.FRIDAY,
-  6: DAY_OF_WEEK.SATURDAY
-};
-
 interface TimeSlot {
   startTime: string;
   endTime: string;
 }
 
+@Injectable()
 export class BookingService extends IBookingService {
   constructor(
     private readonly bookingRepo: IBookingRepository,
+    private readonly barbershopRepo: IBarbershopRepository,
     private readonly serviceRepo: IBarbershopServiceRepository,
-    private readonly operatingHoursRepo: IOperatingHoursRepository
+    private readonly operatingHoursRepo: IOperatingHoursRepository,
+    private readonly userRepo: IUserRepository
   ) {
     super();
   }
 
   async create(command: CreateBookingCommand): Promise<Result<Booking>> {
+    const userId = command.userId;
+
+    const user = await this.userRepo.findById(userId);
+    if (!user) {
+      return notFound('User not found');
+    }
+
+    const barbershop = await this.barbershopRepo.findById(command.barbershopId);
+    if (!barbershop) {
+      return notFound('Barbershop not found');
+    }
+
+    if (!barbershop.canAcceptBookings()) {
+      return error('Barbershop is not active or subscription is past due');
+    }
+
     const service = await this.serviceRepo.findById(command.serviceId);
     if (!service) {
       return notFound('Service not found');
@@ -44,6 +55,19 @@ export class BookingService extends IBookingService {
 
     if (service.isDeleted()) {
       return error('Service is no longer available');
+    }
+
+    const barber = await this.userRepo.findById(command.barberId);
+    if (!barber) {
+      return notFound('Barber not found');
+    }
+
+    if (!barber.isProvider()) {
+      return error('Selected user is not a valid service provider');
+    }
+
+    if (!barber.belongsTo(command.barbershopId)) {
+      return error('Barber does not belong to this barbershop');
     }
 
     const dayOfWeek = DAY_MAP[command.date.getDay()];
@@ -77,21 +101,18 @@ export class BookingService extends IBookingService {
       startTime: command.startTime
     });
 
-    const booking = new Booking({
+    const booking = {
       barberId: command.barberId,
       barbershopId: command.barbershopId,
       cancelledAt: null,
-      createdAt: new Date(),
       date: command.date,
       endTime,
-      id: uuid(),
       serviceId: command.serviceId,
       startTime: command.startTime,
       status: BOOKING_STATUS.CONFIRMED,
       stripeChargeId: null,
-      updatedAt: new Date(),
       userId: command.userId
-    });
+    };
 
     const saved = await this.bookingRepo.create(booking);
     return created(saved);

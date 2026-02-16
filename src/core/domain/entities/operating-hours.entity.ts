@@ -6,6 +6,8 @@ interface OperatingHoursProps {
   dayOfWeek: DayOfWeek;
   openTime: string;
   closeTime: string;
+  lunchStart: string | null;
+  lunchEnd: string | null;
   isClosed: boolean;
 }
 
@@ -15,6 +17,8 @@ export class OperatingHours {
   readonly dayOfWeek: DayOfWeek;
   readonly openTime: string;
   readonly closeTime: string;
+  readonly lunchStart: string | null;
+  readonly lunchEnd: string | null;
   readonly isClosed: boolean;
 
   constructor(props: OperatingHoursProps) {
@@ -23,6 +27,8 @@ export class OperatingHours {
     this.dayOfWeek = props.dayOfWeek;
     this.openTime = props.openTime;
     this.closeTime = props.closeTime;
+    this.lunchStart = props.lunchStart;
+    this.lunchEnd = props.lunchEnd;
     this.isClosed = props.isClosed;
   }
 

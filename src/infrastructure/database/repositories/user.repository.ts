@@ -140,6 +140,22 @@ export class UserRepository extends IUserRepository {
     return account?.password || null;
   }
 
+  async createGuest(user: User): Promise<User> {
+    const raw = await this.prisma.user.create({
+      data: {
+        barbershopId: user.barbershopId,
+        email: user.email,
+        emailVerified: user.emailVerified,
+        id: user.id,
+        image: user.image,
+        name: user.name,
+        role: user.role
+      }
+    });
+
+    return UserMapper.toDomain(raw);
+  }
+
   async findBySessionToken(token: string): Promise<User | null> {
     const session = await this.prisma.session.findUnique({
       include: { user: true },

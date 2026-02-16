@@ -1,7 +1,7 @@
 import { type User } from '../../../core/domain/entities';
 
 export class UserPresenter {
-  static toHttp(user: User) {
+  static toHttp(this: void, user: User) {
     return {
       barbershopId: user.barbershopId,
       createdAt: user.createdAt.toISOString(),
@@ -15,9 +15,7 @@ export class UserPresenter {
     };
   }
 
-  static toHttpList(users: User[]) {
-    return users.map(function (item) {
-      return UserPresenter.toHttp(item);
-    });
+  static toHttpList(this: void, users: User[]) {
+    return users.map(user => UserPresenter.toHttp(user));
   }
 }

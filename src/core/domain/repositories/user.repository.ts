@@ -11,6 +11,7 @@ export abstract class IUserRepository implements IRepository<User> {
   abstract delete(id: string): Promise<void>;
   abstract findByEmail(email: string): Promise<User | null>;
   abstract createWithPassword(user: User, passwordHash: string): Promise<User>;
+  abstract createGuest(user: User): Promise<User>;
   abstract getPasswordHash(userId: string): Promise<string | null>;
   abstract findBySessionToken(token: string): Promise<User | null>;
 }

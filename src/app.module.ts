@@ -7,13 +7,23 @@ import { AppService } from './app.service';
 import { JwtAuthGuard } from './infrastructure/guards/jwt-auth.guard';
 import { MorganMiddleware } from './infrastructure/middleware/morgan.middleware';
 import { AuthModule } from './infrastructure/modules/auth/auth.module';
+import { BarbershopModule } from './infrastructure/modules/barbershop/barbershop.module';
+import { BookingModule } from './infrastructure/modules/booking/booking.module';
 import { DatabaseModule } from './infrastructure/modules/database/database.module';
 import { SwaggerModule } from './infrastructure/modules/swagger/swagger.module';
 import { UserModule } from './infrastructure/modules/user/user.module';
 
 @Module({
   controllers: [AppController],
-  imports: [ConfigModule.forRoot({ isGlobal: true }), DatabaseModule, SwaggerModule, AuthModule, UserModule],
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    DatabaseModule,
+    SwaggerModule,
+    AuthModule,
+    UserModule,
+    BarbershopModule,
+    BookingModule
+  ],
   providers: [
     AppService,
     {

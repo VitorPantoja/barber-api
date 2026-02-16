@@ -2,7 +2,7 @@ import { BOOKING_STATUS, type BookingStatus } from '../enums';
 
 const CANCELLATION_WINDOW_HOURS = 2;
 
-interface BookingProps {
+export interface BookingProps {
   id: string;
   status: BookingStatus;
   barbershopId: string;

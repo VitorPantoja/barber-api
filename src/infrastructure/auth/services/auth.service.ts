@@ -27,7 +27,6 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
 
-    // Create User Domain Entity
     const newUser = new User({
       barbershopId: null,
       createdAt: new Date(),
@@ -40,9 +39,36 @@ export class AuthService {
       updatedAt: new Date()
     });
 
-    // Persist via Repository (Transactional)
     const user = await this.userRepo.createWithPassword(newUser, hashedPassword);
 
+    return this.generateToken(user);
+  }
+
+  async createGuest(dto: { name: string; email: string; image?: string }): Promise<AuthResponse> {
+    const existing = await this.userRepo.findByEmail(dto.email);
+
+    if (existing) {
+      throw new BadRequestException('User with this email already exists. Please login.');
+    }
+
+    const newUser = new User({
+      barbershopId: null,
+      createdAt: new Date(),
+      email: dto.email,
+      emailVerified: false,
+      id: uuid(),
+      image: dto.image ?? null,
+      name: dto.name,
+      role: USER_ROLE.CUSTOMER,
+      updatedAt: new Date()
+    });
+
+    const user = await this.userRepo.createGuest(newUser);
+
+    return this.generateToken(user);
+  }
+
+  private generateToken(user: User): AuthResponse {
     const payload: JwtPayload = {
       email: user.email,
       role: user.role,
@@ -63,7 +89,6 @@ export class AuthService {
   async signIn(dto: SignInDto): Promise<AuthResponse> {
     const user = await this.userRepo.findByEmail(dto.email);
 
-    // Get password hash from repository
     const passwordHash = user ? await this.userRepo.getPasswordHash(user.id) : null;
 
     if (!user || !passwordHash) {

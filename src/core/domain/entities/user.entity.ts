@@ -58,4 +58,8 @@ export class User {
   belongsTo(barbershopId: string): boolean {
     return this.barbershopId === barbershopId;
   }
+
+  isProvider(): boolean {
+    return this.role === USER_ROLE.BARBER || this.role === USER_ROLE.COMPANY_ADMIN;
+  }
 }

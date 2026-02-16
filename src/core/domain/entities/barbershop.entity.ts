@@ -1,6 +1,8 @@
+import { DAY_MAP } from '../consts';
 import { SUBSCRIPTION_STATUS, type SubscriptionStatus } from '../enums';
+import { type OperatingHours } from './operating-hours.entity';
 
-interface BarbershopProps {
+export interface BarbershopProps {
   id: string;
   name: string;
   slug: string;
@@ -14,6 +16,7 @@ interface BarbershopProps {
   themeColor: string | null;
   createdAt: Date;
   updatedAt: Date;
+  deletedAt?: Date | null;
 }
 
 export class Barbershop {
@@ -30,8 +33,10 @@ export class Barbershop {
   readonly themeColor: string | null;
   readonly createdAt: Date;
   readonly updatedAt: Date;
+  readonly deletedAt: Date | null;
+  readonly operatingHours: OperatingHours[];
 
-  constructor(props: BarbershopProps) {
+  constructor(props: BarbershopProps & { operatingHours?: OperatingHours[]; deletedAt?: Date | null }) {
     this.id = props.id;
     this.name = props.name;
     this.slug = props.slug;
@@ -45,6 +50,16 @@ export class Barbershop {
     this.themeColor = props.themeColor;
     this.createdAt = props.createdAt;
     this.updatedAt = props.updatedAt;
+    this.deletedAt = props.deletedAt ?? null;
+    this.operatingHours = props.operatingHours ?? [];
+  }
+
+  markAsDeleted(): void {
+    (this as any).deletedAt = new Date();
+  }
+
+  isDeleted(): boolean {
+    return !!this.deletedAt;
   }
 
   isActive(): boolean {
@@ -59,5 +74,30 @@ export class Barbershop {
 
   isPastDue(): boolean {
     return this.subscriptionStatus === SUBSCRIPTION_STATUS.PAST_DUE;
+  }
+
+  isOpen(date: Date = new Date()): boolean {
+    const dayIndex = date.getDay();
+
+    const todayEnum = DAY_MAP[dayIndex];
+    if (!todayEnum) return false;
+
+    const todayHours = this.operatingHours.find(oh => oh.dayOfWeek === todayEnum);
+
+    if (!todayHours || !todayHours.isOpen()) {
+      return false;
+    }
+
+    const currentHours = date.getHours();
+    const currentMinutes = date.getMinutes();
+    const currentTotalMinutes = currentHours * 60 + currentMinutes;
+
+    const [openH, openM] = todayHours.openTime.split(':').map(Number);
+    const [closeH, closeM] = todayHours.closeTime.split(':').map(Number);
+
+    const openTotalMinutes = openH * 60 + openM;
+    const closeTotalMinutes = closeH * 60 + closeM;
+
+    return currentTotalMinutes >= openTotalMinutes && currentTotalMinutes < closeTotalMinutes;
   }
 }
